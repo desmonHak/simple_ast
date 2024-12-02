@@ -6,7 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "debug_c.h"
+#include "./DebugLibC/time_code.h"
 #include "tokens.h"
 
 typedef size_t size_data;
