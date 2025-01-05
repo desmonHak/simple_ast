@@ -172,8 +172,8 @@ void print_ast(ast_t *my_ast, uint16_t level, char *prefix) {
             case AST_DIV:
             case AST_MOD:
                 printf("%s%c\n", prefix, get_operation_char(my_ast->type_node));
-                print_ast(my_ast->data.ast_t_operation.left, level + 1, "|--");
-                print_ast(my_ast->data.ast_t_operation.right, level + 1, "|--");
+                print_ast(my_ast->data.ast_t_operation.left, level + 1, "|-- l ->");
+                print_ast(my_ast->data.ast_t_operation.right, level + 1, "|-- r ->");
                 break;
             case AST_NUMBER:
                 printf("%s%d\n", prefix, my_ast->data.ast_t_number);
