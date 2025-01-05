@@ -24,9 +24,12 @@ int main()
     puts("Parser finalizado.");
     print_tokents(init_lexer(buffer, sizeof(buffer)));
     puts("print_tokents Parser finalizado.");
-    ast_t*      root  = parser_parser(parser);  
+    ast_t*      root  = parser_parser(parser);
     puts("ast finalizado.");
     print_ast(root, 0, "");
+
+    int result = calc_value(root);
+    printf("El resultado es: %d\n", result);
 
     return 0;
 }

@@ -1,6 +1,8 @@
 #ifndef _AST_C_
 #define _AST_C_
 
+#include "ast.h"
+
 ast_t* init_ast(ast_t my_ast){
     #ifdef DEBUG_ENABLE
         DEBUG_PRINT(DEBUG_LEVEL_INFO,
@@ -28,5 +30,15 @@ char get_operation_char(type_node n){
         }
 }
 
-#include "ast.h"
+int calc_value(ast_t* root) {
+    if (root == NULL) {
+        puts("Error: el árbol está vacío.");
+        return 0;
+    }
+    int result = 0;
+
+    return result;
+}
+
+
 #endif
