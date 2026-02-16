@@ -11,6 +11,17 @@ parser_t *init_parser(lexer_t *lexer)
     return parser;
 }
 
+void* free_parser(parser_t *parser)
+{
+    if (!parser) return NULL;
+    
+    // Liberar el último token pendiente
+    free_token(parser->token);
+    
+    free(parser);
+    return NULL;
+}
+
 token_t *parser_eat(parser_t *parser, unsigned int type)
 {
 #ifdef DEBUG_ENABLE
@@ -34,9 +45,14 @@ token_t *parser_eat(parser_t *parser, unsigned int type)
         printf("[Parser]: Token no esperado: %s, se esperaba un: %s \n", 
             data_tok, token_type_to_str(type));
         free(data_tok);
+        free_token(parser->token);
+
         exit(1);
     }
+   
+    token_t* old_token = parser->token;           // GUARDA anterior
     parser->token = lexer_next_token(parser->lexer);
+    free_token(old_token);                        // LIBERA anterior
     return parser->token;
 }
 
@@ -49,7 +65,8 @@ ast_t *parser_parser_operation(parser_t *parser) {
                 parser);
     #endif
     type_node type_N = 0;
-    switch (parser->token->type)
+    unsigned int token_type = parser->token->type;
+    switch (token_type)
     {
         case TOKEN_suma:          type_N = AST_ADD; break;
         case TOKEN_resta:         type_N = AST_SUB; break;
@@ -58,10 +75,13 @@ ast_t *parser_parser_operation(parser_t *parser) {
         case TOKEN_modulo:        type_N = AST_MOD; break;
             
         default:
-            printf("Error parser_parser_operation, se esperaba una operacion arimetica pero se recibido un token %d\n", parser->token->type);
+            printf("Error parser_parser_operation, se esperaba una operacion \
+                arimetica pero se recibido un token %d\n", token_type);
             exit(1);
     }
-    return init_ast((ast_t) { .type_node = type_N});
+
+    //parser_eat(parser, parser->token->type);  // CONSUME el operador
+    return init_ast((ast_t) { .type_node = type_N });
 }
 
 ast_t *parser_parser_int(parser_t *parser)
@@ -86,24 +106,49 @@ ast_t *parser_parser_int(parser_t *parser)
         exit(1);
     }
     uint64_t mi_value = atoll(parser->token->value);
-    parser_eat(parser, TOKEN_INT);
-    ast_t* num = init_ast((ast_t){
+    parser_eat(parser, TOKEN_INT); // ESTO ya libera el token INT
+
+    if (parser->token->type == TOKEN_EOF) {
+        // Caso simple: solo número
+        ast_t* num = init_ast((ast_t){
+            .type_node = AST_NUMBER, 
+            .data.ast_t_number.number = mi_value
+        });
+        return num;
+    }
+
+    
+    // Crea nodo operación (SIN consumir token)
+    ast_t* nodo_operacion = parser_parser_operation(parser);
+    // consume el operador
+    parser_eat(parser, parser->token->type);
+
+    nodo_operacion->data.ast_t_operation.left = 
+    init_ast((ast_t){  // NUEVO num
         .type_node = AST_NUMBER, 
         .data.ast_t_number.number = mi_value
     });
-    // si el siguiente nodo es el final, retornar el numero
-    if (parser->token->type == TOKEN_EOF) return num;
 
-    ast_t*nodo_operataion = parser_parser_operation(parser);
-    nodo_operataion->data.ast_t_operation.left = num;
-
-    parser->token = lexer_next_token(parser->lexer);
     // crear una nueva rama hacia la derecha
-    nodo_operataion->data.ast_t_operation.right = parser_parser_expr(parser);
+    // Right SOLO si hay más expresión
+    if (parser->token->type != TOKEN_EOF) {
+        nodo_operacion->data.ast_t_operation.right = parser_parser_int(parser);
+    } else {
+        nodo_operacion->data.ast_t_operation.right = init_ast((ast_t){
+            .type_node = AST_NUMBER, 
+            .data.ast_t_number.number = 0  // o maneja error
+        });
+    }
 
-    return nodo_operataion;
+    return nodo_operacion;
 }
 
+/**
+ * @brief Es necesario liberar la memoria devuelta
+ * 
+ * @param parser 
+ * @return ast_t* 
+ */
 ast_t *parser_parser_expr(parser_t *parser)
 {
 #ifdef DEBUG_ENABLE

@@ -18,6 +18,11 @@ lexer_t* init_lexer(unsigned char *src, size_data size){
     my_lexer->c = my_lexer->src[my_lexer->i]; // caracter actual
     return my_lexer;
 }
+void free_lexer(lexer_t* lexer) {
+    if (lexer) {
+        free(lexer);  // src NO es nuestro, no lo liberamos
+    }
+}
 
 void lexer_advance(lexer_t* lexer){
     #ifdef DEBUG_ENABLE
@@ -42,13 +47,30 @@ void print_tokents(lexer_t* lexer){
                     lexer);
     #endif
     
-    token_t* tok;
-    for(tok = lexer_next_token(lexer); tok->type != TOKEN_EOF; tok = lexer_next_token(lexer)){
+    token_t* tok  = NULL;
+    token_t* next = NULL;
+    
+    tok = lexer_next_token(lexer);
+    while (tok->type != TOKEN_EOF) {
         char* data_tok = token_to_str(tok);
         printf("%s\n", data_tok);
         free(data_tok);
+        
+        next = lexer_next_token(lexer);  // Guarda el siguiente ANTES de liberar
+        free_token(tok);               
+        tok = next;
     }
+    free_token(tok);  // el TOKEN_EOF
     
+}
+
+void free_token(token_t* token) {
+    if (!token) return;
+    
+    if (token->value) {   
+        free(token->value);
+    }
+    free(token);
 }
 
 
@@ -65,6 +87,12 @@ void lexer_skip_whitespace(lexer_t* lexer) {
     while (lexer->c == '\r' || lexer->c == '\t') lexer_advance(lexer);
 }
 
+/**
+ * @brief Es necesario liberar la memoria devuelta
+ * 
+ * @param lexer 
+ * @return token_t* 
+ */
 token_t* lexer_parser_number(lexer_t* lexer){
     #ifdef DEBUG_ENABLE
         DEBUG_PRINT(DEBUG_LEVEL_INFO,
@@ -88,7 +116,13 @@ token_t* lexer_parser_number(lexer_t* lexer){
         strcat(value, (char[]){lexer->c, 0});
         lexer_advance(lexer);
     }
-    return init_token(value, TOKEN_INT);
+
+    // value queda "adoptado" por token
+    token_t* tok = init_token(value, TOKEN_INT);  
+    if (!tok) {
+        free(value);  // Solo si init_token falla
+    }
+    return tok;
 }
 
 

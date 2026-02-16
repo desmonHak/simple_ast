@@ -24,6 +24,7 @@ void print_tokents(lexer_t* lexer);
 void lexer_skip_whitespace(lexer_t* lexer);
 token_t* lexer_parser_number(lexer_t* lexer);
 token_t* lexer_next_token(lexer_t* lexer);
+void free_token(token_t* token);
 
 #include "lexer.c"
 #endif

@@ -12,9 +12,41 @@ ast_t* init_ast(ast_t my_ast){
                     my_ast);
     #endif
     ast_t* ast = (ast_t*)calloc(1, sizeof(ast_t));
-    if (ast) *ast = my_ast;
+    if (!ast) return NULL;
+    
+    *ast = my_ast; 
     return ast;
 }
+
+void* free_ast(ast_t* ast) {
+#ifdef DEBUG_ENABLE
+    DEBUG_PRINT(DEBUG_LEVEL_INFO, "Liberando AST en %p", ast);
+#endif
+    
+    if (!ast) return NULL;
+    
+    // Liberar recursivamente subárboles
+    switch (ast->type_node) {
+        case AST_ADD:
+        case AST_SUB:
+        case AST_MUL:
+        case AST_DIV:
+        case AST_MOD:
+            free_ast(ast->data.ast_t_operation.left);
+            free_ast(ast->data.ast_t_operation.right);
+            break;
+        case AST_NUMBER:
+        case AST_END:
+            // Hojas no tienen hijos
+            break;
+        default:
+            fprintf(stderr, "ERROR: tipo_node desconocido %d\n", ast->type_node);
+    }
+    
+    free(ast);
+    return NULL;
+}
+
 
 char get_operation_char(type_node n){
     switch (n)
