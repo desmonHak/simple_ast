@@ -1,1 +1,13 @@
 *.exe
+.idea
+.vscode
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.log
+*.tmp
+*.out
+*.bak
+*.swp

@@ -30,7 +30,10 @@ token_t *parser_eat(parser_t *parser, unsigned int type)
      */
     if (parser->token->type != type)
     {
-        printf("[Parser]: Token no esperado: %s, se esperaba un: %s \n", token_to_str(parser->token), token_type_to_str(type));
+        char* data_tok = token_to_str(parser->token);
+        printf("[Parser]: Token no esperado: %s, se esperaba un: %s \n", 
+            data_tok, token_type_to_str(type));
+        free(data_tok);
         exit(1);
     }
     parser->token = lexer_next_token(parser->lexer);
@@ -115,7 +118,11 @@ ast_t *parser_parser_expr(parser_t *parser)
      *  Esta funcion analiza una expresion y llama a una funcion de analisis.
      *
      */
-    printf("Token %s\n", token_to_str(parser->token));
+    char data_tok = token_to_str(parser->token);
+    printf("Token %s\n", data_tok);
+    free(data_tok);
+    data_tok = NULL;
+
     switch (parser->token->type)
     {
     case TOKEN_INT: return parser_parser_int(parser);
@@ -123,7 +130,9 @@ ast_t *parser_parser_expr(parser_t *parser)
         puts("Token EOF");
         return init_ast((ast_t){.type_node = AST_END});
     default:
-        printf("[Parser]: Se esperaba un token %s\n", token_to_str(parser->token));
+        data_tok = token_to_str(parser->token);
+        printf("[Parser]: Se esperaba un token %s\n", data_tok);
+        free(data_tok);
         exit(1);
     }
 }

@@ -36,17 +36,25 @@ static const char* token_type_to_str(unsigned int type){
     return "not_stringable";
 }
 
+/**
+ * @brief Esta funcion devuelve una cadena reservada dinamicamente con la
+ * informacion del token, es importante liberar la memoria despues de usarla
+ * 
+ * @param token token analizado
+ * @return char* puntero a la cadena con la informacion del token, 
+ * es importante liberar la memoria despues de usarla
+ */
 char* token_to_str(token_t* token){
     const char* type_str = token_type_to_str(token->type);
-    char template[59];
+    // aqui puede haber un BOF, pero como este proyecto es de demostracion no lo cambiare
+    char _template[64] = { 0 };
     if (token->value != NULL && token->value[0] != '\0' && token->value[0] != '\n' && token->value[0] != '\r') 
-        strcpy(template, "<type=%s, \tint_type=%d, \tvalue=%s>");
+        strcpy(_template, "<type=%s, \tint_type=%d, \tvalue=%s>");
     else 
-        strcpy(template, "<type=%s, \tint_type=%d, \tvalue=not printeable>");
-    char* str = (char*)calloc(strlen(type_str) + (sizeof(template) / sizeof(const char) + 8), sizeof(char));
-    sprintf(str, template, type_str, token->type, token->value);
+        strcpy(_template, "<type=%s, \tint_type=%d, \tvalue=not printeable>");
+    char* str = (char*)calloc(strlen(type_str) + (sizeof(_template) / sizeof(const char) + 8), sizeof(char));
+    sprintf(str, _template, type_str, token->type, token->value);
     return str;
-
 }
 
 #endif

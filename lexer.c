@@ -44,7 +44,9 @@ void print_tokents(lexer_t* lexer){
     
     token_t* tok;
     for(tok = lexer_next_token(lexer); tok->type != TOKEN_EOF; tok = lexer_next_token(lexer)){
-        printf("%s\n", token_to_str(tok));
+        char* data_tok = token_to_str(tok);
+        printf("%s\n", data_tok);
+        free(data_tok);
     }
     
 }
