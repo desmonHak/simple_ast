@@ -44,17 +44,37 @@ static const char* token_type_to_str(unsigned int type){
  * @return char* puntero a la cadena con la informacion del token, 
  * es importante liberar la memoria despues de usarla
  */
-char* token_to_str(token_t* token){
+char* token_to_str(const token_t* token) {
+    if (!token) return NULL;
+
     const char* type_str = token_type_to_str(token->type);
-    // aqui puede haber un BOF, pero como este proyecto es de demostracion no lo cambiare
-    char _template[64] = { 0 };
-    if (token->value != NULL && token->value[0] != '\0' && token->value[0] != '\n' && token->value[0] != '\r') 
-        strcpy(_template, "<type=%s, \tint_type=%d, \tvalue=%s>");
-    else 
-        strcpy(_template, "<type=%s, \tint_type=%d, \tvalue=not printeable>");
-    char* str = (char*)calloc(strlen(type_str) + (sizeof(_template) / sizeof(const char) + 8), sizeof(char));
-    sprintf(str, _template, type_str, token->type, token->value);
+
+    const char* fmt_with_val  = "<type=%s, \tint_type=%d, \tvalue=%s>";
+    const char* fmt_no_val    = "<type=%s, \tint_type=%d, \tvalue=not printable>";
+
+    const char* fmt;
+    const char* value;
+
+    if (token->value != NULL &&
+        token->value[0] != '\0' &&
+        token->value[0] != '\n' &&
+        token->value[0] != '\r') {
+        fmt   = fmt_with_val;
+        value = token->value;
+    } else {
+        fmt   = fmt_no_val;
+        value = "";
+    }
+
+    int needed = snprintf(NULL, 0, fmt, type_str, token->type, value);
+    if (needed < 0) return NULL;
+
+    char* str = malloc((size_t)needed + 1);
+    if (!str) return NULL;
+
+    snprintf(str, (size_t)needed + 1, fmt, type_str, token->type, value);
     return str;
 }
+
 
 #endif

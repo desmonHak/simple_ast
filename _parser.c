@@ -118,7 +118,7 @@ ast_t *parser_parser_expr(parser_t *parser)
      *  Esta funcion analiza una expresion y llama a una funcion de analisis.
      *
      */
-    char data_tok = token_to_str(parser->token);
+    char* data_tok = token_to_str(parser->token);
     printf("Token %s\n", data_tok);
     free(data_tok);
     data_tok = NULL;
